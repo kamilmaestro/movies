@@ -18,4 +18,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, CrudReposit
     void deleteById(@Param("movieId") Long movieId);
 
     List<Movie> findByOrderByYearDesc();
+
+    @Query("FROM Movie WHERE LOWER(title) LIKE LOWER(CONCAT('%', :toSearch, '%')) OR TRIM(year) LIKE %:toSearch%")
+    List<Movie> findByTitleAndYear(String toSearch);
 }

@@ -14,6 +14,7 @@ import pl.edu.pwsztar.domain.mapper.MovieMapper;
 import pl.edu.pwsztar.domain.repository.MovieRepository;
 import pl.edu.pwsztar.service.MovieService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class MovieServiceImpl implements MovieService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MovieServiceImpl.class);
+    private static final String EMPTY = "";
 
     private final MovieRepository movieRepository;
     private final Converter<List<Movie>, List<MovieDto>> movieListMapper;
@@ -66,5 +68,21 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public MovieCounterDto countMovies() {
         return movieCounterMapper.convert(movieRepository.count());
+    }
+
+    @Override
+    public List<MovieDto> searchMovies(String toSearch) {
+        if (isAbleToSearch(toSearch)) {
+            final List<Movie> searchedMovies = movieRepository.findByTitleAndYear(toSearch);
+            return movieListMapper.convert(searchedMovies);
+        }
+
+        return Collections.emptyList();
+    }
+
+    private boolean isAbleToSearch(String toSearch) {
+        return Optional.ofNullable(toSearch)
+            .filter(text -> !text.isBlank())
+            .isPresent();
     }
 }

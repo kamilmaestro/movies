@@ -63,4 +63,12 @@ public class MovieApiController {
         return new ResponseEntity<>(movieService.countMovies(), HttpStatus.OK);
     }
 
+    @CrossOrigin
+    @GetMapping(value = "/movies/search", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<MovieDto>> searchMovies(@RequestParam("q") String toSearch) {
+        LOGGER.info("search movies");
+
+        return new ResponseEntity<>(movieService.searchMovies(toSearch), HttpStatus.OK);
+    }
+
 }
