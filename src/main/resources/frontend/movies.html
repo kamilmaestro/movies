@@ -9,33 +9,36 @@
 		<script type="text/javascript" src="https://code.jquery.com/jquery-1.10.2.js"></script>
 		<script type="text/javascript">
 
-			// get all movies
-			$.get('http://127.0.0.1:8080/api/movies', {}, function (data, textStatus, jqXHR) {
-			    console.log('data: ', data);
-    			var html = '';
-        		$.each(data, function(key, value) {
-
-        	    	html += '<div class="card">';
-  					html += '<img src="' + (isImage(value.image) ? value.image : getPlaceholder()) + '" alt="movie" style="width:100%">';
-  					html += '<h3>' + value.title + '</h3>';
-  					html += '<p class="title">Rok produkcji</p>';
-  					html += '<p>' + (value.year === undefined ? "????" : value.year) + '</p>';
-					html += '<p><button onclick="deleteMovie('+value.movieId+')">ID: ' + value.movieId + '</button></p>';
-					html += '</div>';
-        		});
-
-        		$('#movies').html(html);
-			}).fail(function() {
-		    	$('#movies').html("<div style='text-align: center; color: red;'>Mam problem z wyświetleniem danych... :/ (musisz uruchomić aplikacje za pomocą MAVEN)</div>");
-			});
-
+			function getAllMovies() {
+				// get all movies
+				$.get('http://127.0.0.1:8080/api/movies', {}, function (data, textStatus, jqXHR) {
+					console.log('data: ', data);
+					setMoviesToPage(data);
+				}).fail(function () {
+					$('#movies').html("<div style='text-align: center; color: red;'>Mam problem z wyświetleniem danych... :/ (musisz uruchomić aplikacje za pomocą MAVEN)</div>");
+				});
 			// count movies
-            $.get('http://127.0.0.1:8080/api/movies/counter', {}, function (data, textStatus, jqXHR) {
-                console.log('movies counter data: ', data);
-                $('#movies-counter').html("Licznik filmów: <b style='color: #000;'>" + data.counter + "</b>");
-            }).fail(function() {
-                $('#movies-counter').html("Licznik filmów: <b style='color: #800;'>ERROR :(</b>");
-            });
+				$.get('http://127.0.0.1:8080/api/movies/counter', {}, function (data, textStatus, jqXHR) {
+					console.log('movies counter data: ', data);
+					$('#movies-counter').html("Licznik filmów: <b style='color: #000;'>" + data.counter + "</b>");
+				}).fail(function() {
+					$('#movies-counter').html("Licznik filmów: <b style='color: #800;'>ERROR :(</b>");
+				});
+			}
+
+			function setMoviesToPage(data){
+				let html = '';
+					$.each(data, function(key, value) {
+						html += '<div class="card">';
+						html += '<img src="' + (isImage(value.image) ? value.image : getPlaceholder()) + '" alt="movie" style="width:100%">';
+						html += '<h3>' + value.title + '</h3>';
+						html += '<p class="title">Rok produkcji</p>';
+						html += '<p>' + (value.year === undefined ? "????" : value.year) + '</p>';
+						html += '<p><button onclick="deleteMovie(' + value.movieId + ')">ID: ' + value.movieId + '</button></p>';
+						html += '</div>';
+					});
+				$('#movies').html(html);
+			}
 
 			function deleteMovie(movieId) {
             	$.ajax({
@@ -52,6 +55,20 @@
                 	}
             	});
         	}
+
+			function searchMovies(){
+				let queryText = document.getElementById('q').value;
+				if(queryText==""){
+					getAllMovies();
+				}else {
+					$.get('http://127.0.0.1:8080/api/movies/search?q='+queryText, {}, function (data, textStatus, jqXHR) {
+						console.log('data: ', data);
+						setMoviesToPage(data);
+					}).fail(function () {
+						$('#movies').html("<div style='text-align: center; color: red;'>Mam problem z wyświetleniem danych... :/ (musisz uruchomić aplikacje za pomocą MAVEN)</div>");
+					});
+				}
+			}
 
 			function isImage(url) {
             	return url.indexOf(".jpg") !== -1 || url.indexOf(".png") !== -1;
@@ -72,6 +89,7 @@
             	$('#add-movie').click(function() {
                 	window.location.href='add-movie.html';
             	})
+				getAllMovies();
         	});
 		</script>
 
@@ -106,6 +124,11 @@
       			color: grey;
       			font-size: 18px;
     		}
+
+			.searchInput{
+				width: 40%;
+				height: 25px;
+			}
 
     		button, a {
       			border: none;
@@ -148,7 +171,13 @@
 			<button style="width: 150px;" class="btn" id="add-movie">+ Dodaj</button>
 		</div>
 		<div style="text-align: center">
-			<a style="width: 150px;" class="btn" href="http://127.0.0.1:8080/api/download-txt">-> Export TXT</a>
+			<a style="width: 150px; margin-bottom: 10px" class="btn" href="http://127.0.0.1:8080/api/download-txt">-> Export TXT</a>
+			<div id="search">
+				<form action="javascript:searchMovies();">
+					<input class="searchInput" type="text" placeholder="Wyszukaj filmy po nazwie lub roku" id="q">
+					<button style="width: 150px;" class="btn" onclick="searchMovies()" type="button">Wyszukaj</button>
+				</form>
+			</div>
 		</div>
     	<div id="movies"></div>
 	</body>
